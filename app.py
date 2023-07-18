@@ -58,6 +58,7 @@ def mang_ml_analysis(ds, lat_range, lon_range):
                      regular_cover_area / 1000000, closed_cover_area / 1000000, original / 1000000])
 
     df = pd.DataFrame(data[1:], columns=data[0])
+    # print(df)
     df["year-month"] = df["year"].astype('str') + "-" + df["month"].astype('str')
 
     grouped_df = df.groupby(['year', 'month'])
@@ -86,15 +87,8 @@ def mang_ml_analysis(ds, lat_range, lon_range):
     }
 
 app = Flask(__name__)
-# @app.route("/")
-# def hi():
-#     return render_template("home.html")
-
 @app.route("/")
 def hello_world():
-        # Read the merged CSV file
-        
-    
     return render_template("index.html")
 
 @app.route('/my_flask_route', methods=['GET', 'POST'])
@@ -111,14 +105,14 @@ def my_flask_function():
         lon_range = (lnmin, lnmax)
         print(lat_range, lon_range)
         time_range = (fd1, td1)
-        # display_map(x=lon_range, y=lat_range)
+        
         try:
             ds = dc.load(product="s2a_sen2cor_granule",
                             measurements=["red","green","blue", "nir", "swir_1"],
                         x=lon_range,
                         y=lat_range,
                         time=time_range,
-                        output_crs='EPSG:6933',
+                        output_crs='EPSG:3857',
                         resolution=(-30, 30))
             dataset = ds
             dataset =  odc.algo.to_f32(dataset)
@@ -205,7 +199,6 @@ def my_flask_function():
             img_buffer = io.BytesIO()
             plt.savefig(img_buffer, format='png')
             img_buffer.seek(0)
-            # plt.savefig('./static/my_plot.png')
             # Serve the image file in the Flask app
             img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
         
@@ -239,5 +232,6 @@ def my_flask_function():
     # Return the base64 encoded PNG image as JSON
         return jsonify({'image': img_base64,'mangrove_data':mangrove1,'year_data':year,'a': a})
 
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',debug=True)
+    app.run(host='0.0.0.0',port='5000',debug=True)
